@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CareerPath Advisor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css?family=Baloo+2:700|Montserrat:400,700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: linear-gradient(135deg, #4f8cff 0%, #38ef7d 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    #welcome-overlay {
+      position: fixed; z-index: 10; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: linear-gradient(120deg, #4f8cff 0%, #38ef7d 100%);
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+      transition: opacity 1s; animation: welcomePop 1.2s cubic-bezier(.68,-0.55,.27,1.55) forwards;
+    }
+    @keyframes welcomePop {
+      0% { transform: scale(0.8) rotate(-10deg); opacity: 0; }
+      60% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    #welcome-illustration {
+      width: 120px; height: 120px; margin-bottom: 20px;
+      animation: bounceIn 1s;
+    }
+    @keyframes bounceIn {
+      0% { transform: scale(0.7); opacity: 0; }
+      60% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    #welcome-text {
+      font-family: 'Baloo 2', cursive; font-size: 2.3rem; color: #fff;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.18); letter-spacing: 2px; margin-bottom: 12px;
+      animation: bounceIn 1.2s;
+      text-align: center;
+      font-weight: 700;
+    }
+    #start-btn {
+      font-size: 1.1rem; background: #fff; color: #38ef7d; border: none; border-radius: 32px;
+      padding: 12px 36px; font-family: 'Montserrat', sans-serif; font-weight: 700; cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: background 0.3s, color 0.3s, transform 0.2s;
+      margin-top: 24px;
+    }
+    #start-btn:hover {
+      background: #38ef7d; color: #fff; transform: scale(1.05);
+    }
+    .container {
+      max-width: 480px; margin: 60px auto 0 auto; background: #fff;
+      border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      padding: 24px 18px 18px 18px; display: none; animation: fadeIn 1.2s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(24px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    h1 {
+      text-align: center; color: #4f8cff; font-family: 'Baloo 2', cursive;
+      margin-bottom: 10px; font-size: 2.1rem;
+    }
+    #advisor-bar {
+      display: flex; align-items: center; justify-content: center; gap:1.2rem; margin-bottom: 10px;
+    }
+    .human-avatar {
+      width: 54px; height: 54px; display: flex; align-items: center; border-radius: 50%;
+      background: linear-gradient(160deg,#a7e9f2 56%,#c1eac6 100%);
+      box-shadow: 0 2px 8px #14dd9e40;
+      border: 2.2px solid #4f8cff;
+      justify-content: center;
+      animation: avatarBounceIn 1s;
+    }
+    @keyframes avatarBounceIn {
+      0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+      60% { transform: scale(1.25) rotate(4deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    .advisor-avatar {
+      width: 54px; height: 54px; border-radius: 50%; background: #e3f9ee;
+      display: flex; align-items: center; justify-content: center;
+      animation: avatarBounceIn 1s; transition: background 0.3s;
+    }
+    .advisor-avatar.happy { background: #e3f9ee; }
+    .advisor-avatar.thinking { background: #fffde4; }
+    .advisor-avatar.surprised { background: #ffe1e1; }
+    .advisor-avatar.animated { animation: avatarTalking 0.8s infinite alternate;}
+    @keyframes avatarTalking {
+      0% { box-shadow: 0 0 0 0 #38ef7d55; }
+      100% { box-shadow: 0 0 0 8px #38ef7d33; }
+    }
+    .advisor-face {
+      font-size: 2rem; user-select: none;
+      animation: faceSmile 1.2s; transition: all 0.3s;
+    }
+    @keyframes faceSmile {
+      0% { transform: scale(0.7) rotate(-10deg);}
+      100% { transform: scale(1) rotate(0);}
+    }
+    #progress-container {
+      width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; margin-bottom: 14px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%; width: 0%; background: linear-gradient(90deg,#38ef7d,#4f8cff); border-radius: 4px;
+      transition: width 0.6s cubic-bezier(.4,1.4,.7,1);
+    }
+    #chatbox {
+      height: 340px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 8px;
+      padding: 12px; background: #f7fafd; margin-bottom: 16px; font-size: 15px;
+      box-shadow: 0 2px 12px rgba(79,140,255,0.03);
+    }
+    .msg {
+      margin: 14px 0; display: flex; align-items: flex-end; opacity: 0;
+      animation: bubblePop 0.5s forwards;
+    }
+    .user { justify-content: flex-end; text-align: right; }
+    .user .bubble {
+      background: #4f8cff; color: #fff; border-radius: 20px 20px 4px 20px;
+      margin-left: 40px; margin-right: 0;
+    }
+    .bot .bubble {
+      background: #e3f9ee; color: #222; border-radius: 20px 20px 20px 4px;
+      margin-right: 40px; margin-left: 0; border: 2px solid #38ef7d55;
+      animation: botBubble 0.7s;
+    }
+    @keyframes botBubble {
+      0% { border-color: #38ef7d00; background: #e3f9ee;}
+      100% { border-color: #38ef7d55; background: #e3f9ee;}
+    }
+    .bubble {
+      padding: 12px 18px; max-width: 80%; font-size: 1rem;
+      box-shadow: 0 2px 8px rgba(56,239,125,0.08); transition: background 0.2s; word-break: break-word;
+    }
+    @keyframes bubblePop {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .card-list {
+      display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0;
+      justify-content: flex-start;
+    }
+    .career-card {
+      background: #fff; border: 2px solid #38ef7d44; border-radius: 14px;
+      padding: 12px 12px 8px 12px; min-width: 130px; max-width: 170px;
+      box-shadow: 0 2px 8px #38ef7d11;
+      display: flex; flex-direction: column; align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .career-card:hover {
+      transform: scale(1.04) translateY(-2px);
+      box-shadow: 0 6px 18px #4f8cff22;
+      border-color: #4f8cff99;
+    }
+    .career-icon {
+      font-size: 2rem; margin-bottom: 6px; 
+      animation: pulse 1.3s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1);}
+      
+      100% { transform: scale(1.13);}
+    }
+    .career-title {
+      font-weight: bold; color: #4f8cff; font-size: 1.05rem; text-align: center;
+    }
+    .career-desc {
+      font-size: 0.92rem; color: #444; text-align: center; margin-top: 2px;
+    }
+    #userInput {
+      width: 72%; padding: 10px; border-radius: 20px; border: 1px solid #bdbdbd; font-size: 15px;
+      outline: none; transition: border 0.2s; margin-right: 2%;
+    }
+    #userInput:focus { border: 1.5px solid #4f8cff; }
+    #sendBtn {
+      width: 24%; padding: 10px; border-radius: 20px; border: none; background: #38ef7d;
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    #sendBtn:hover { background: #4f8cff; transform: scale(1.05);}
+    #typing-indicator {
+      font-size: 1rem; color: #38ef7d; margin-left: 8px; display: none; animation: fadeIn 0.7s;
+      display: flex; align-items: center; margin-top: 6px;
+    }
+    #typing-dots {
+      display: inline-block; margin-left: 4px;
+    }
+    .dot {
+      display: inline-block; width: 8px; height: 8px; background: #38ef7d;
+      border-radius: 50%; margin: 0 1px; opacity: 0.7; animation: bounce 1s infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s;}
+    .dot:nth-child(3) { animation-delay: 0.4s;}
+    @keyframes bounce {
+      0% { transform: translateY(0);}
+      100% { transform: translateY(-8px);}
+    }
+    .feedback-bar {
+      margin: 18px 0 0 0; display: flex; gap: 10px; justify-content: center; align-items: center;
+    }
+    .feedback-btn {
+      font-size: 1.1rem; border: none; border-radius: 18px; padding: 8px 20px;
+      background: #f0f7fa; color: #38ef7d; font-weight: 700; cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .feedback-btn:hover { background: #38ef7d; color: #fff; }
+    @media (max-width: 500px) {
+      .container { padding: 8px; }
+      #chatbox { height: 240px; }
+      h1 { font-size: 1.5rem;}
+      .card-list { flex-direction: column; align-items: stretch;}
+      .career-card { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="welcome-overlay">
+    <div id="welcome-illustration">
+     <!-- Welcome SVG illustration -->
+     <svg width="92" height="92" viewBox="0 0 92 92" fill="none">
+      <ellipse cx="46" cy="46" rx="46" ry="46" fill="#9ED5F5"/>
+      <ellipse cx="46" cy="58" rx="27" ry="19" fill="#47e6c1"/>
+      <ellipse cx="46" cy="37" rx="18" ry="20" fill="#ffe0b2"/>
+      <ellipse cx="37" cy="40" rx="3" ry="3.5" fill="#222"/>
+      <ellipse cx="55" cy="40" rx="3" ry="3.5" fill="#222"/>
+      <ellipse cx="46" cy="52" rx="5.5" ry="3.8" fill="#f78648"/>
+     </svg>
+    </div>
+    <div id="welcome-text">🎉 Welcome to CareerPath Advisor!</div>
+    <button id="start-btn">Start</button>
+  </div>
+  <div class="container" id="main-container">
+    <div id="progress-container"><div id="progress-bar"></div></div>
+    <h1>CareerPath Advisor</h1>
+    <div id="advisor-bar">
+      <div class="human-avatar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 54 54">
+          <ellipse cx="27" cy="29" rx="18" ry="20" fill="#9ED5F5"/>
+          <ellipse cx="27" cy="22" rx="13" ry="13" fill="#ffe0b2"/>
+          <ellipse cx="27" cy="38" rx="14" ry="8" fill="#47e6c1"/>
+          <ellipse cx="34.5" cy="23.5" rx="2.5" ry="2.5" fill="#222"/>
+          <ellipse cx="19.5" cy="23.5" rx="2.5" ry="2.5" fill="#222"/>
+          <ellipse cx="27" cy="31" rx="4" ry="2.2" fill="#f78648"/>
+          <ellipse cx="27" cy="22.2" rx="13" ry="13" fill="none" stroke="#888" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="advisor-avatar happy" id="advisor-avatar">
+        <span class="advisor-face" id="advisor-face">🤖</span>
+      </div>
+      <span style="font-weight:600;color:#38ef7d;font-size:1.15rem;">Advisor</span>
+    </div>
+    <div id="chatbox"></div>
+    <div style="display:flex;">
+      <input type="text" id="userInput" placeholder="Type your answer..." autocomplete="off" />
+      <button id="sendBtn" onclick="sendMessage()">Send</button>
+    </div>
+    <div id="typing-indicator">
+      <span>Advisor is typing</span>
+      <span id="typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+    </div>
+  </div>
+  <script>
+    // --- Welcome Overlay Fix & Start
+    const welcomeOverlay = document.getElementById('welcome-overlay');
+    const mainContainer = document.getElementById('main-container');
+    document.getElementById('start-btn').onclick = function() {
+      welcomeOverlay.style.opacity = 0;
+      setTimeout(() => {
+        welcomeOverlay.style.display = 'none';
+        mainContainer.style.display = 'block';
+        setTimeout(() => {
+          appendMessage(questions[0], "bot");
+        }, 600);
+      }, 1000);
+    };
+
+    // CareerPath Advisor chatbot logic
+    const subjectInfo = {
+      "Physics": "Degrees: B.Sc./M.Sc./PhD in Physics. Starting Salary: ₹3–6 lakhs per annum (Entry-level). Future: High demand in research, academics, R&D, data science, and technology development, especially with advancements in quantum and material sciences.",
+      "Chemistry": "Degrees: B.Sc./M.Sc./PhD in Chemistry or specialized branches. Starting Salary: ₹3–7 lakhs per annum. Future: Expanding roles in pharma, energy, materials, and environmental sectors.",
+      "Mathematics": "Degrees: B.Sc./M.Sc./PhD in Mathematics, Applied Mathematics, or Statistics. Starting Salary: ₹3–6 lakhs per annum. Future: Excellent in analytics, research, finance, actuarial science, and data science.",
+      "Biology": "Degrees: B.Sc./M.Sc./PhD in Biological Sciences, Biotechnology, or related fields. Starting Salary: ₹3–6 lakhs per annum. Future: Biotech and healthcare are fast-growing, with opportunities in research, pharma, and conservation.",
+      "Economics": "Degrees: B.A./M.A./PhD in Economics. Starting Salary: ₹4–8 lakhs per annum. Future: High scope in policy, analytics, finance, and research; rising demand for data analysts.",
+      "Accountancy": "Degrees: B.Com/M.Com, CA, CMA, or ACCA. Starting Salary: ₹4–8 lakhs per annum after CA. Future: Always in demand in finance, auditing, consulting, and corporate management.",
+      "Business Studies": "Degrees: BBA/MBA or equivalent. Starting Salary: ₹4–10 lakhs per annum (MBA graduates usually higher). Future: Rapid growth in management, marketing, and entrepreneurship.",
+      "English": "Degrees: B.A./M.A. in English, Mass Communication. Starting Salary: ₹3–6 lakhs per annum. Future: Diverse roles in education, writing, media, corporate communications.",
+      "History": "Degrees: B.A./M.A./PhD in History. Starting Salary: ₹3–6 lakhs per annum. Future: Academia, research, civil services, heritage management.",
+      "Political Science": "Degrees: B.A./M.A./PhD in Political Science or International Relations. Starting Salary: ₹3–6 lakhs per annum. Future: Law, civil services, international affairs, policy analysis.",
+      "Computer Science": "Degrees: B.Sc./B.Tech/M.Tech in CS or IT, MCA. Starting Salary: ₹5–15 lakhs per annum. Future: Ever-expanding: AI, data science, cybersecurity, software development.",
+      "Psychology": "Degrees: B.A./M.A./M.Sc. in Psychology, M.Phil/PhD for clinical roles. Starting Salary: ₹3–8 lakhs per annum. Future: Growing in mental health, HR, research, and counseling.",
+      "Geography": "Degrees: B.A./M.A. in Geography, GIS certifications. Starting Salary: ₹3–6 lakhs per annum. Future: Urban planning, GIS, disaster management, environmental consultancy.",
+      "Sociology": "Degrees: B.A./M.A. in Sociology. Starting Salary: ₹3–5 lakhs per annum. Future: NGOs, social work, policy research, community development.",
+      "Engineering": "Degrees: B.E./B.Tech/M.Tech in various branches. Starting Salary: ₹3–12 lakhs per annum. Future: Innovation and entrepreneurship rising.",
+      "Medical": "Degrees: MBBS, BDS, BAMS, BHMS, BPT, MD/MS. Starting Salary: ₹6–12 lakhs per annum. Future: Always in demand; super-specialty and global healthcare trends rising.",
+      "Science": "Degrees: B.Sc./M.Sc. in sciences; further specialization. Starting Salary: ₹3–7 lakhs per annum.",
+      "Architecture": "Degrees: B.Arch/M.Arch. Starting Salary: ₹4–8 lakhs per annum.",
+      "Pharmacy": "Degrees: B.Pharm/M.Pharm/Pharm.D. Starting Salary: ₹3–6 lakhs per annum.",
+      "Pilot": "Degrees: Commercial Pilot License. Starting Salary: ₹15–20 lakhs per annum.",
+      "Veterinary": "Degrees: B.V.Sc & AH/M.V.Sc. Starting Salary: ₹3–6 lakhs per annum.",
+      "Nursing": "Degrees: B.Sc/M.Sc Nursing, GNM. Starting Salary: ₹3–6 lakhs per annum.",
+      "Paramedical": "Degrees: Diploma/Bachelor's in Paramedical Sciences.",
+      "Law": "Degrees: LL.B (5-year/3-year), LL.M. Starting Salary: ₹4–12 lakhs per annum.",
+      "Digital": "Degrees: Certifications/BBA/MBA with specialization.",
+      "Hotel": "Degrees: BHM/B.Sc. in Hospitality Management.",
+      "Event": "Degrees: Diplomas/Bachelor’s in Event Management or Mass Comm.",
+      "Design": "Degrees: B.Des/M.Des, Diplomas.",
+      "Arts": "Degrees: B.A. in Humanities, Fine Arts, or Performing Arts.",
+      "Media": "Degrees: B.A./M.A. in Mass Communications/Journalism.",
+      "Animation": "Degrees: Diplomas/Bachelor’s in Animation, Multimedia, VFX.",
+      "IT": "Degrees: B.Sc./BCA/MCA/B.Tech in IT or CS.",
+      "Fitness": "Degrees: Certifications/Diploma in Fitness/Nutrition.",
+      "Beauty": "Degrees: Certifications/Diploma in Cosmetology, Beauty Therapy.",
+      "Teaching": "Degrees: B.Ed/M.Ed, subject-specific degrees.",
+      "Entrepreneurship": "Degrees: None mandatory; BBA/MBA preferred.",
+      "Performing Arts": "Degrees: B.A./Diploma in Performing Arts.",
+      "Sports": "Degrees: B.P.Ed/Diplomas in Sports Management.",
+      "Graphic": "Degrees: Bachelor’s/Diploma in Graphic Design, Fine Arts."
+    };
+
+    let step = 0;
+    let userData = {};
+    let userName = "";
+    let userStream = "";
+
+    const chatbox = document.getElementById('chatbox');
+    const userInput = document.getElementById('userInput');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const advisorAvatar = document.getElementById('advisor-avatar');
+    const advisorFace = document.getElementById('advisor-face');
+    const totalSteps = 6;
+
+    const questions = [
+      "Hi! 👋 I'm here to help you decide your career after 12th. First, what's your name?",
+      "Nice to meet you, {name}! Which stream did you choose after 10th? (Science/Commerce/Arts/Vocational/Other)"
+    ];
+
+    const streamQuestions = {
+      Science: "Awesome! Are you more interested in Engineering, Medicine, Research, or something else?",
+      Commerce: "Great! Are you more interested in Accounting, Business Management, Finance, or something else?",
+      Arts: "Wonderful! Are you interested in Design, Law, Journalism, Civil Services, or something else?",
+      Vocational: "Nice! Are you interested in IT, Animation, Hospitality, Beauty & Wellness, or something else?",
+      Other: "No worries! Tell me about your favorite subject or activity."
+    };
+
+    function appendMessage(msg, sender) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + sender;
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerHTML = msg;
+      div.appendChild(bubble);
+      chatbox.appendChild(div);
+      chatbox.scrollTop = chatbox.scrollHeight;
+      setTimeout(() => { div.style.opacity = 1; }, 50);
+    }
+
+    function showTyping(show = true, mood = "thinking") {
+      typingIndicator.style.display = show ? 'flex' : 'none';
+      advisorAvatar.classList.remove("happy", "thinking", "surprised");
+      advisorAvatar.classList.add(mood);
+      if (show) {
+        advisorAvatar.classList.add("animated");
+        advisorFace.textContent = mood === "happy" ? "🤖" : mood === "thinking" ? "🤔" : "😮";
+      } else {
+        advisorAvatar.classList.remove("animated");
+        advisorFace.textContent = "🤖";
+      }
+    }
+
+    function showSubjectInfo(subject) {
+      const info = subjectInfo[subject];
+      if (info) {
+        appendMessage(`<b>About ${subject}:</b> ${info}`, "bot");
+      } else {
+        appendMessage(`Sorry, I don't have information about "${subject}".`, "bot");
+      }
+    }
+
+    function sendMessage() {
+      const input = userInput.value.trim();
+      if (!input) return;
+      appendMessage(input, "user");
+      userInput.value = "";
+      showTyping(true, "thinking");
+      setTimeout(() => {
+        showTyping(false, "happy");
+        handleBotResponse(input);
+      }, 900 + Math.random() * 600);
+    }
+
+    function handleBotResponse(input) {
+      const lower = input.toLowerCase();
+
+      if (lower.startsWith("tell me about ")) {
+        const subject = input.substring(14).trim();
+        showSubjectInfo(subject);
+        return;
+      } else if (lower.startsWith("info about ")) {
+        const subject = input.substring(10).trim();
+        showSubjectInfo(subject);
+        return;
+      }
+
+      if (step === 0) {
+        userName = input.replace(/[^a-zA-Z ]/g, "").split(" ")[0] || "Friend";
+        userData.name = userName;
+        appendMessage(`Nice to meet you, <b>${userName}</b>! Which stream did you choose after 10th? (Science/Commerce/Arts/Vocational/Other)`, "bot");
+        step++;
+      } else if (step === 1) {
+        userStream = input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+        userData.stream = userStream;
+        let q = streamQuestions[userStream] || streamQuestions["Other"];
+        appendMessage(q, "bot");
+        step++;
+      } else if (step === 2) {
+        userData.streamInterest = input;
+        appendMessage(`How would you describe your academic performance, ${userName}? (excellent/good/average/needs improvement)`, "bot");
+        step++;
+      } else if (step === 3) {
+        userData.performance = input.toLowerCase();
+        appendMessage(`Would you like suggestions for traditional degrees, skill-based courses, or both, ${userName}?`, "bot");
+        step++;
+      } else if (step === 4) {
+        let stream = userStream;
+        let recs = [];
+        if (recommendations[stream]) recs = recommendations[stream];
+        else recs = recommendations.Other;
+        recs = recs.concat(alternativeSuggestions);
+        appendMessage(`<b>✨ ${userName}, based on your answers, here are some options you can consider:</b>`, "bot");
+        showRecommendations(recs);
+        setTimeout(showFeedback, 1200);
+        step++;
+      } else {
+        appendMessage(`Thank you, ${userName}! If you have more questions, refresh and start again.`, "bot");
+      }
+    }
+
+    userInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    // ICONS AND RECOMMENDATIONS DATA
+    const iconMap = {
+      "Engineering": "🛠️", "Medical": "🩺", "Science": "🔬", "Architecture": "🏛️", "Pharmacy": "💊",
+      "Pilot": "✈️", "Veterinary": "🐾", "Nursing": "👩‍⚕️", "Paramedical": "🏥", "IT": "💻",
+      "Business": "📊", "Law": "⚖️", "Economics": "💹", "Design": "🎨", "Arts": "🖌️",
+      "Media": "📺", "Hotel": "🏨", "Event": "🎉", "Animation": "🎬", "Digital": "🌐",
+      "Graphic": "🖼️", "Fitness": "🏋️", "Beauty": "💅", "Teaching": "👩‍🏫", "Civil": "🏛️"
+    };
+
+    const recommendations = {
+      Science: [
+        {icon:"🛠️", title:"B.Tech/B.E. (Engineering)", desc:"Software, Mechanical, Civil, AI, Data Science, Robotics.", subject:"Engineering"},
+        {icon:"🩺", title:"MBBS/BDS/BAMS", desc:"Doctor, Dentist, Ayurvedic, Homeopathy, Unani.", subject:"Medical"},
+        {icon:"🔬", title:"B.Sc. (Honours)", desc:"Physics, Chemistry, Maths, Biotech, Data Science.", subject:"Science"},
+        {icon:"🏛️", title:"B.Arch", desc:"Architecture, Urban Planning, Interior Design.", subject:"Architecture"},
+        {icon:"💊", title:"B.Pharma", desc:"Pharmacist, Medical Sales, Research.", subject:"Pharmacy"},
+        {icon:"✈️", title:"Commercial Pilot", desc:"Pilot, Aviation.", subject:"Pilot"},
+        {icon:"🐾", title:"Veterinary Science", desc:"Veterinarian, Animal Health.", subject:"Veterinary"},
+        {icon:"👩‍⚕️", title:"B.Sc. Nursing", desc:"Nurse, Healthcare.", subject:"Nursing"},
+        {icon:"🏥", title:"Paramedical", desc:"Lab Tech, Radiology, Emergency Tech.", subject:"Paramedical"}
+      ],
+      Commerce: [
+        {icon:"📊", title:"B.Com (Hons/General)", desc:"Accountant, Auditor, Tax Consultant.", subject:"Accountancy"},
+        {icon:"⚖️", title:"CA/CS/CMA", desc:"Chartered Accountant, Company Secretary.", subject:"Accountancy"},
+        {icon:"💹", title:"B.A. Economics", desc:"Economist, Analyst.", subject:"Economics"},
+        {icon:"💻", title:"BBA/BMS", desc:"Business Analyst, Manager, HR.", subject:"Business Studies"},
+        {icon:"⚖️", title:"B.Com LL.B.", desc:"Corporate Lawyer.", subject:"Law"},
+        {icon:"🌐", title:"Digital Marketing", desc:"SEO, Content, Social Media, Analytics.", subject:"Digital"},
+        {icon:"🏨", title:"Hotel Management", desc:"Hotel Manager, Chef, Hospitality.", subject:"Hotel"}
+      ],
+      Arts: [
+        {icon:"🎨", title:"B.Des/BFA", desc:"Design, Fine Arts, Fashion, Animation.", subject:"Design"},
+        {icon:"🖌️", title:"B.A. (Hons)", desc:"Political Science, Sociology, Economics, Psychology, English.", subject:"Arts"},
+        {icon:"📺", title:"Mass Communication", desc:"Journalist, Content Creator, PR.", subject:"Media"},
+        {icon:"⚖️", title:"B.A. LL.B.", desc:"Law, Legal Advisor.", subject:"Law"},
+        {icon:"🏨", title:"Hotel/Event Management", desc:"Event Coordinator, Planner.", subject:"Event"},
+        {icon:"🖼️", title:"Graphic Design", desc:"Designer, Branding, Web Design.", subject:"Graphic"}
+      ],
+      Vocational: [
+        {icon:"🎬", title:"Animation & Multimedia", desc:"Animator, VFX Artist, Game Designer.", subject:"Animation"},
+        {icon:"💻", title:"Web/App Development", desc:"Web Developer, App Developer.", subject:"IT"},
+        {icon:"🌐", title:"Digital Marketing", desc:"SEO, Content, Social Media, Analytics.", subject:"Digital"},
+        {icon:"🏋️", title:"Fitness & Nutrition", desc:"Trainer, Nutritionist.", subject:"Fitness"},
+        {icon:"💅", title:"Beauty & Wellness", desc:"Beautician, Spa Manager.", subject:"Beauty"},
+        {icon:"🎉", title:"Event Management", desc:"Event Coordinator, Planner.", subject:"Event"}
+      ],
+      Other: [
+        {icon:"👩‍🏫", title:"Teaching", desc:"School Teacher, Tutor, Trainer.", subject:"Teaching"},
+        {icon:"💼", title:"Entrepreneurship", desc:"Start your own business or freelance.", subject:"Entrepreneurship"}
+      ]
+    };
+
+    const alternativeSuggestions = [
+      {icon:"🎵", title:"Performing Arts", desc:"Music, Dance, Theatre, Acting.", subject:"Performing Arts"},
+      {icon:"🏏", title:"Sports", desc:"Athlete, Coach, Sports Management.", subject:"Sports"},
+      {icon:"👩‍🏫", title:"Teaching", desc:"School Teacher, Tutor, Trainer.", subject:"Teaching"},
+      {icon:"💼", title:"Entrepreneurship", desc:"Start your own business or freelance.", subject:"Entrepreneurship"}
+    ];
+
+    function showRecommendations(cards) {
+      let html = '<div class="card-list">';
+      cards.forEach(card => {
+        html += `<div class="career-card">
+          <div class="career-icon">${card.icon}</div>
+          <div class="career-title">${card.title}</div>
+          <div class="career-desc">${card.desc}</div>
+          <button style="margin-top:6px;background:#38ef7d;color:#fff;border:none;border-radius:12px;padding:4px 12px;cursor:pointer;font-size:0.95em;"
+            onclick="showSubjectInfo('${card.subject ? card.subject : card.title.split(' ')[0]}')">Info</button>
+        </div>`;
+      });
+      html += '</div>';
+      appendMessage(html, "bot");
+    }
+
+    function showFeedback() {
+      let html = `<div class="feedback-bar">
+        <button class="feedback-btn" onclick="sendFeedback('5')">👍 Very helpful</button>
+        <button class="feedback-btn" onclick="sendFeedback('3')">😐 Okay</button>
+        <button class="feedback-btn" onclick="sendFeedback('1')">👎 Not helpful</button>
+      </div>`;
+      appendMessage("How helpful was this session for you?", "bot");
+      appendMessage(html, "bot");
+    }
+
+    window.sendFeedback = function(score) {
+      let msg = score === "5" ? "Thank you so much for your positive feedback! " :
+                score === "3" ? "Thanks for your feedback! We'll keep improving. " :
+                "Sorry it wasn't helpful. We'll work to improve!";
+      appendMessage(msg, "bot");
+      showTyping(false, "happy");
+    };
+  </script>
+</body>
+</html>
